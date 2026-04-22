@@ -13,7 +13,7 @@ import os
 import time
 import uuid
 
-TRACE_FILE = os.path.join(os.path.dirname(__file__), "runs", "trace.jsonl")
+TRACE_FILE = os.path.join(os.path.dirname(__file__), "..", "runs", "trace.jsonl")
 
 
 def _write(record: dict) -> None:

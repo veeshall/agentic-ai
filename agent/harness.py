@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "middleware"))
 
 import anthropic
 from datetime import datetime
@@ -27,12 +27,14 @@ YELLOW  = "\033[93m"
 GREEN   = "\033[92m"
 RED     = "\033[91m"
 WHITE   = "\033[97m"
+BLUE    = "\033[94m"
 RESET   = "\033[0m"
 
-HARNESS = CYAN
-AGENT   = MAGENTA
-CLAUDE  = YELLOW
-TOOL    = GREEN
+HARNESS  = CYAN
+AGENT    = MAGENTA
+CLAUDE   = YELLOW
+TOOL     = GREEN
+THINKING = BLUE
 
 # ─── Pricing (claude-opus-4-7, per token) ────────────────────────────────────
 # Change these if you switch models.

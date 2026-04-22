@@ -11,7 +11,8 @@ import sys
 import asyncio
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "v4"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "middleware"))
 import skill_debugger
 
 import registry
@@ -30,10 +31,8 @@ registry.register(
     memory_key=skill_debugger.SKILL_DEF.get("memory_key"),
 )
 
-SYSTEM_PROMPT = """You are an orchestrator. You receive high-level tasks and delegate them to specialist skills.
-
-Break the task down, call the right skill(s), and report back what happened.
-Think out loud about which skill to use and why."""
+_PROMPT_FILE = os.path.join(os.path.dirname(__file__), "prompts", "orchestrator.md")
+SYSTEM_PROMPT = open(_PROMPT_FILE).read().strip()
 
 
 PRICE_PER_INPUT_TOKEN  = 15 / 1_000_000
@@ -115,8 +114,8 @@ async def run(task: str):
 if __name__ == "__main__":
     outcome = asyncio.run(run(
         "I have a Python project where the tests are failing. "
-        f"Test file: {os.path.abspath('v4/test_buggy.py')}. "
-        f"Source file: {os.path.abspath('v4/buggy.py')}. "
+        f"Test file: {os.path.abspath('agent/test_buggy.py')}. "
+        f"Source file: {os.path.abspath('agent/buggy.py')}. "
         "Please fix it."
     ))
     print(f"\nResult: {outcome['result']}")

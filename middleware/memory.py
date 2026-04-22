@@ -14,7 +14,7 @@ import os
 from datetime import datetime
 import anthropic
 
-MEMORY_FILE = os.path.join(os.path.dirname(__file__), "runs", "memory.jsonl")
+MEMORY_FILE = os.path.join(os.path.dirname(__file__), "..", "runs", "memory.jsonl")
 MAX_RECORDS = 20        # global cap across all files
 DISTILL_THRESHOLD = 5   # distill a file's episodic records once it reaches this many
 

@@ -7,10 +7,10 @@ import sys
 import asyncio
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "v4"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
 from skill_debugger import run
 
-DIR = os.path.join(os.path.dirname(__file__), "..", "v4")
+DIR = os.path.join(os.path.dirname(__file__), "..", "agent")
 
 if __name__ == "__main__":
     result = asyncio.run(run(

@@ -12,8 +12,8 @@ import sys
 import asyncio
 import os
 
-sys.path.insert(0, os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "v4"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "middleware"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
 
 import registry
 import skill_debugger
@@ -31,7 +31,7 @@ registry.register(
 # Here it reuses the same fn to show the wiring.
 registry.register_version("run_debugger", "v2", skill_debugger.run)
 
-EVAL_DIR = os.path.join(os.path.dirname(__file__), "eval")
+EVAL_DIR = os.path.dirname(__file__)
 
 CASES = [
     {

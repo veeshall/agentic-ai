@@ -515,7 +515,7 @@ results = await registry.dispatch_many([
 ])
 ```
 
-Uses `asyncio.gather`. Nothing changes in the skills. Used in `eval_runner.py` to run all eval cases in parallel.
+Uses `asyncio.gather`. Nothing changes in the skills. Used in `eval/runner.py` to run all eval cases in parallel.
 
 ### 30. Retry and fallback
 
@@ -625,9 +625,9 @@ The tool-use loop is the same at every level. The pattern scales without any new
 Claude reads both and decides which fits the task. Word the descriptions to encode the routing logic.
 
 **Files:**
-- `skill_orchestrator.py` — wraps `orchestrator.run()` as a skill contract
-- `meta_orchestrator.py` — registers both skills, routes between them
-- `orchestrator.py` — updated to return `{result, cost}` so it can be wrapped
+- `orchestration/skill_orchestrator.py` — wraps `orchestrator.run()` as a skill contract
+- `orchestration/meta_orchestrator.py` — registers both skills, routes between them
+- `orchestration/orchestrator.py` — updated to return `{result, cost}` so it can be wrapped
 
 ### 34. Prompt engineering — three patterns that matter
 
@@ -669,6 +669,53 @@ Structured output → enforces it regardless
 
 Each layer adds a different kind of control. Prompt engineering shapes the distribution of Claude's outputs. Structured output + harness rules enforce the hard constraints.
 
+## Part 9: Prompt Files
+
+### 35. Externalizing system prompts
+
+In early versions, system prompts live as Python strings:
+
+```python
+SYSTEM_PROMPT = """You are a debugging agent..."""
+```
+
+This works, but it mixes two different concerns in one file — code (tool definitions, dispatch logic) and content (what the agent should do and how to behave). Real production systems separate them.
+
+**The pattern:**
+
+```python
+_PROMPT_FILE = os.path.join(os.path.dirname(__file__), "prompts", "debugger.md")
+SYSTEM_PROMPT = open(_PROMPT_FILE).read().strip()
+```
+
+Prompt lives in `agent/prompts/debugger.md`. Loaded once at import time. The Python file is unchanged at runtime — just a one-line load.
+
+**Why it matters:**
+
+| Inline string | External `.md` file |
+|---|---|
+| Edit prompt → touch Python file | Edit prompt → touch `.md` only |
+| Git diff mixes code and content | Prompt diffs are clean text diffs |
+| No syntax highlighting or preview | Full editor support for `.md` |
+| Hard to read with escaped quotes | Natural prose, no escaping |
+
+**CLAUDE.md — meta-instructions for the coding assistant**
+
+`CLAUDE.md` at the project root is a special file that Claude Code (and similar tools) read automatically when opened in the project. It's not an agent system prompt — it describes the project itself:
+
+- What this codebase is and why it exists
+- Directory structure and what each file does
+- How to run things
+- Key patterns (skill contracts, middleware, prompt loading)
+
+This is how tools like Claude Code, Cursor, and Cline understand a new codebase instantly without reading every file. Every real project should have one.
+
+**Files:**
+- `agent/prompts/debugger.md` — debugger agent instructions + few-shot examples
+- `orchestration/prompts/orchestrator.md` — orchestrator routing instructions
+- `orchestration/prompts/meta_orchestrator.md` — meta-level routing decision rules
+- `CLAUDE.md` — project overview for AI coding assistants
+
 ## Topic index
 
 | # | Topic | Key file |
@@ -682,28 +729,29 @@ Each layer adds a different kind of control. Prompt engineering shapes the distr
 | 7 | Task structure vs system prompt | `examples/agent_v3.py` |
 | 8 | Tool failure modes | `examples/agent_v2.py` |
 | 9 | Dead ends and recovery | `examples/agent_v2.py` |
-| 10 | Structured output | `v4/harness.py` |
-| 11 | Independent verification | `v4/harness.py` |
-| 12 | Harness / agent separation | `v4/harness.py` |
-| 13 | Four actors | `v4/harness.py` |
-| 14 | MCP — tools as a service | `v4/mcp_server.py` |
+| 10 | Structured output | `agent/harness.py` |
+| 11 | Independent verification | `agent/harness.py` |
+| 12 | Harness / agent separation | `agent/harness.py` |
+| 13 | Four actors | `agent/harness.py` |
+| 14 | MCP — tools as a service | `agent/mcp_server.py` |
 | 15 | API costs | — |
-| 16 | Skills as callable functions | `v4/skill_debugger.py` |
-| 17 | Skill contracts | `v4/skill_debugger.py` |
-| 18 | Registry + middleware | `registry.py` |
-| 19 | Orchestrator | `orchestrator.py` |
-| 20 | Multi-layer cost tracking | `orchestrator.py` |
-| 21 | Memory types | `memory.py` |
-| 22 | Compression, distillation, forgetting | `memory.py` |
-| 23 | Memory as MCP server | `memory_server.py` |
-| 24 | Observability | `observe.py` |
-| 25 | Evals | `eval_runner.py` |
-| 26 | Context window management | `context.py` |
-| 27 | Context overflow safeguards | `v4/mcp_server.py`, `v4/harness.py` |
-| 28 | Security | `v4/mcp_server.py` |
-| 29 | Parallel dispatch | `registry.py` |
-| 30 | Retry and fallback | `registry.py` |
-| 31 | Circuit breaker | `registry.py` |
-| 32 | Skill versioning | `registry.py`, `eval_runner.py` |
-| 33 | Multi-agent — orchestrators calling orchestrators | `meta_orchestrator.py`, `skill_orchestrator.py` |
-| 34 | Prompt engineering — chain-of-thought, role, few-shot | `v4/skill_debugger.py` |
+| 16 | Skills as callable functions | `agent/skill_debugger.py` |
+| 17 | Skill contracts | `agent/skill_debugger.py` |
+| 18 | Registry + middleware | `middleware/registry.py` |
+| 19 | Orchestrator | `orchestration/orchestrator.py` |
+| 20 | Multi-layer cost tracking | `orchestration/orchestrator.py` |
+| 21 | Memory types | `middleware/memory.py` |
+| 22 | Compression, distillation, forgetting | `middleware/memory.py` |
+| 23 | Memory as MCP server | `middleware/memory_server.py` |
+| 24 | Observability | `middleware/observe.py` |
+| 25 | Evals | `eval/runner.py` |
+| 26 | Context window management | `middleware/context.py` |
+| 27 | Context overflow safeguards | `agent/mcp_server.py`, `agent/harness.py` |
+| 28 | Security | `agent/mcp_server.py` |
+| 29 | Parallel dispatch | `middleware/registry.py` |
+| 30 | Retry and fallback | `middleware/registry.py` |
+| 31 | Circuit breaker | `middleware/registry.py` |
+| 32 | Skill versioning | `middleware/registry.py`, `eval/runner.py` |
+| 33 | Multi-agent — orchestrators calling orchestrators | `orchestration/meta_orchestrator.py`, `orchestration/skill_orchestrator.py` |
+| 34 | Prompt engineering — chain-of-thought, role, few-shot | `agent/skill_debugger.py` |
+| 35 | Externalizing system prompts + CLAUDE.md | `agent/prompts/`, `orchestration/prompts/`, `CLAUDE.md` |

@@ -16,7 +16,8 @@ import asyncio
 import os
 
 sys.path.insert(0, os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "v4"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "middleware"))
 
 import registry
 import skill_debugger
@@ -47,14 +48,8 @@ registry.register(
     fn=skill_orchestrator.run,
 )
 
-SYSTEM_PROMPT = """You are a meta-orchestrator. You route tasks to the right handler.
-
-Two options available:
-- run_debugger: use for simple, single-file debugging tasks where you know exactly which files are involved.
-- run_orchestrator: use for complex tasks with unknown scope, multiple files, or tasks that need further decomposition.
-
-Route to the simplest handler that can do the job. Don't use run_orchestrator if run_debugger will suffice.
-Think out loud about your routing decision."""
+_PROMPT_FILE = os.path.join(os.path.dirname(__file__), "prompts", "meta_orchestrator.md")
+SYSTEM_PROMPT = open(_PROMPT_FILE).read().strip()
 
 
 async def run(task: str):
@@ -124,7 +119,7 @@ async def run(task: str):
 if __name__ == "__main__":
     asyncio.run(run(
         "I have a Python project where the tests are failing. "
-        f"Test file: {os.path.abspath('v4/test_buggy.py')}. "
-        f"Source file: {os.path.abspath('v4/buggy.py')}. "
+        f"Test file: {os.path.abspath('agent/test_buggy.py')}. "
+        f"Source file: {os.path.abspath('agent/buggy.py')}. "
         "Please fix it."
     ))
